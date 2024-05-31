@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { FaTrash, FaPlus } from "react-icons/fa";
+import Tarea from './tarea';
 
 function Task() {
+
     const [tasks, setTasks] = useState([]);
     const [inputValue, setInputValue] = useState('');
+    const username = 'gaba';
 
-    // Fetch tasks from the server when the component mounts
     useEffect(() => {
-        fetch('https://playground.4geeks.com/todo/users/gaba')
+        fetch(`https://playground.4geeks.com/todo/users/gaba`)
             .then(resp => resp.json())
             .then(data => {
                 if (data && Array.isArray(data.todos)) {
@@ -23,65 +25,89 @@ function Task() {
             });
     }, []);
 
-    // Update tasks on the server
-    const updateTasks = (todos) => {
-        fetch('https://playground.4geeks.com/todo/todos/gaba', {
-            method: "PUT",
-            body: JSON.stringify(todos),
+    //POST - NEW TASK
+
+    const addTask = (task) => {
+        const url = 'https://playground.4geeks.com/todo/todos/gaba';
+        const options = {
+            method: "POST",
             headers: {
-                "Content-Type": "application/json"
-            }
-        })
-            .then(resp => {
-                console.log(resp.ok); // true if the response is successful
-                console.log(resp.status); // status code 200, 400, etc.
-                return resp.json(); // parse the result as JSON
+                'accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                label: task.text,
+                is_done: false
             })
-            .then(data => {
-                if (data && Array.isArray(data.todos)) {
-                    setTasks(data.todos); // update the tasks state with the latest data from the server
-                } else {
-                    console.error('Unexpected data format after update:', data);
-                }
+        };
+        fetch(url, options)
+            .then(response => response.json())
+            .then(datos => {
+                console.log('tarea agregada', datos)
+                setTasks([...tasks, datos])
             })
-            .catch(error => {
-                console.error('Error updating tasks:', error);
-            });
+            .catch(error => console.error('error al agregar tareas:', error))
     };
 
-    // Handle input change for the new task input field
+
     const handleInputChange = (e) => {
         setInputValue(e.target.value);
     };
 
-    // Handle Enter key press to add a new task
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
-            handleAddTask();
+            const newTask = e.target.value
+            setInputValue(newTask)
         }
     };
 
-    // Handle delete task
-    const handleDeleteTask = (index) => {
-        const updatedTasks = tasks.filter((task, i) => i !== index);
-        setTasks(updatedTasks);
-        updateTasks(updatedTasks);
+    const clearForm = () => {
+        setInputValue('')
+    }
+
+    const sendTask = (e) => {
+        e.preventDefault()
+        const task = { text: inputValue }
+        addTask(task)
+        setInputValue('')
+        clearForm()
+
+    }
+
+    const handleDeleteTask = (id) => {
+        const url = `https://playground.4geeks.com/todo/todos/${id}`;
+        const options = {
+            method: "DELETE",
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+        fetch(url, options)
+            .then(response => {
+                if (response.status === 204) {
+                    console.log('tarea eliminada:', id)
+                    const tareasActualizadas = tasks.filter(task => task.id !== id)
+                    setTasks(tareasActualizadas)
+                }
+            })
+            .catch(error => console.error('error al eliminar tarea:', error))
+
     };
 
-    // Handle add task
     const handleAddTask = () => {
         if (inputValue.trim() !== '') {
             const newTask = { label: inputValue, is_done: false };
-            const updatedTasks = [...tasks, newTask];
-            setTasks(updatedTasks);
+            //const updatedTasks = [...tasks, newTask];
+            //setTasks(updatedTasks);
             setInputValue('');
-            updateTasks(updatedTasks);
+            //updateTasks(updatedTasks);
         }
     };
 
-    // Handle clean all tasks
+    //DELETE REMOVE USER
+
     const handleCleanAllTasks = () => {
-        fetch('https://playground.4geeks.com/todo/users/gaba', {
+        fetch(`https://playground.4geeks.com/todo/users/${username}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json"
@@ -101,44 +127,37 @@ function Task() {
 
     return (
         <>
-            {Array.isArray(tasks) && tasks.length === 0 ? (
+            {tasks.length === 0 ? (
                 <h6 className="text-primary mx-3 mt-5 text-center">NO HAY TAREAS PENDIENTES</h6>
             ) : (
                 <h6 className="text-primary mx-3 mt-5 text-center">WEEEE~ ÁNIMO FALTA POQUITO</h6>
             )}
             <li className="list-group-item border border-0 mt-3">
-                <div className="input-group">
+                <form onSubmit={sendTask}>
                     <input
                         className="form-control shadow-none"
                         type="text"
-                        value={inputValue}
-                        onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
                         placeholder="¿Que tienes que hacer?"
+                        name="text"
                     />
-                    <button
-                        className="btn btn-outline-primary pt-1"
-                        type="button"
-                        id="button-addon1"
-                        onClick={handleAddTask}
-                    >
-                        <FaPlus />
-                    </button>
-                </div>
+                </form>
             </li>
 
             <ul className="list-group list-group-flush rounded-0">
-                {Array.isArray(tasks) && tasks.map((task, index) => (
-                    <li key={index} className="list-group-item border border-0">
+                {tasks.map((task) => (
+                    <li key={task.id} className="list-group-item border border-0">
                         <div className="input-group">
                             <input
                                 className="form-control shadow-none"
                                 type="text"
-                                value={task.label || inputValue}
+                                value={task.label || ''}
+                                readOnly
+
                             />
                             <button
                                 className="btn btn-outline-success"
-                                onClick={() => handleDeleteTask(index)}
+                                onClick={() => handleDeleteTask(task.id)}
                             >
                                 <FaTrash />
                             </button>
@@ -148,7 +167,7 @@ function Task() {
             </ul>
 
             <p className='border border-primary p-1 m-3 rounded-2 text-center'>
-                <small>Total tareas pendientes: <strong>{Array.isArray(tasks) ? tasks.filter(task => !task.is_done).length : 0}</strong></small>
+                <small>Total tareas pendientes: <strong>{tasks.filter(task => !task.is_done).length}</strong></small>
             </p>
 
             <button
@@ -156,7 +175,7 @@ function Task() {
                 type="button"
                 onClick={handleCleanAllTasks}
             >
-                <FaTrash className='mb-1' /> FATAL RED BTN
+                <FaTrash className='mb-1' /> BORRAME
             </button>
         </>
     );
