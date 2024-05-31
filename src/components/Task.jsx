@@ -52,20 +52,13 @@ function Task() {
     // Handle input change for the new task input field
     const handleInputChange = (e) => {
         setInputValue(e.target.value);
-    }
+    };
+
     // Handle Enter key press to add a new task
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             handleAddTask();
         }
-    };
-
-    // Handle checkbox change to mark a task as is_done or not is_done
-    const handleCheckboxChange = (index) => {
-        const newTasks = [...tasks];
-        newTasks[index] = { ...newTasks[index], is_done: !newTasks[index].is_done };
-        setTasks(newTasks);
-        updateTasks(newTasks);
     };
 
     // Handle delete task
@@ -115,15 +108,6 @@ function Task() {
             )}
             <li className="list-group-item border border-0 mt-3">
                 <div className="input-group">
-                    <div className="input-group-text">
-                        <input
-                            className="form-check-input mt-0"
-                            type="checkbox"
-                            value=""
-                            aria-label="Checkbox"
-                            disabled
-                        />
-                    </div>
                     <input
                         className="form-control shadow-none"
                         type="text"
@@ -147,29 +131,17 @@ function Task() {
                 {Array.isArray(tasks) && tasks.map((task, index) => (
                     <li key={index} className="list-group-item border border-0">
                         <div className="input-group">
-                            <div className="input-group-text">
-                                <input
-                                    className="form-check-input mt-0"
-                                    type="checkbox"
-                                    aria-label="Checkbox"
-                                    checked={task.is_done}
-                                    onChange={() => handleCheckboxChange(index)}
-                                />
-                            </div>
                             <input
                                 className="form-control shadow-none"
                                 type="text"
-                                value={task.label || ''}
-                                disabled={task.is_done}
+                                value={task.label || inputValue}
                             />
-                            {task.is_done && (
-                                <button
-                                    className="btn btn-outline-success"
-                                    onClick={() => handleDeleteTask(index)}
-                                >
-                                    <FaTrash />
-                                </button>
-                            )}
+                            <button
+                                className="btn btn-outline-success"
+                                onClick={() => handleDeleteTask(index)}
+                            >
+                                <FaTrash />
+                            </button>
                         </div>
                     </li>
                 ))}
@@ -184,7 +156,7 @@ function Task() {
                 type="button"
                 onClick={handleCleanAllTasks}
             >
-                <FaTrash className='mb-1' /> DIE DIE DIE
+                <FaTrash className='mb-1' /> FATAL RED BTN
             </button>
         </>
     );
