@@ -140,6 +140,7 @@ function Task() {
                         onKeyDown={handleKeyDown}
                         placeholder="¿Que tienes que hacer?"
                         name="text"
+                        onChange={handleInputChange}
                     />
                 </form>
             </li>
