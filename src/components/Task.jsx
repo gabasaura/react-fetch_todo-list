@@ -97,10 +97,7 @@ function Task() {
     const handleAddTask = () => {
         if (inputValue.trim() !== '') {
             const newTask = { label: inputValue, is_done: false };
-            //const updatedTasks = [...tasks, newTask];
-            //setTasks(updatedTasks);
             setInputValue('');
-            //updateTasks(updatedTasks);
         }
     };
 
