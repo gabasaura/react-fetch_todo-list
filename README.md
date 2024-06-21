@@ -1,2 +1,3 @@
-# TO DO LIST
-#### ReactJS Fetch from API / REST from 4geek Academy.
+# TO DO LIST API
+#### Developed in ReactJS.
+- Fetch using a REST/API of 4Geeks Academy.
